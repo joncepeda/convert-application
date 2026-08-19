@@ -1,0 +1,20 @@
+{
+  "name": "jc-lookbook",
+  "version": "1.0.0",
+  "private": true,
+  "description": "React-powered Shopify lookbook section (metaobjects + Storefront API)",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-lookbook.mjs",
+    "dev": "node scripts/build-lookbook.mjs --watch",
+    "test": "npm run build && node scripts/smoke-test.mjs"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "jsdom": "^30.0.1"
+  }
+}

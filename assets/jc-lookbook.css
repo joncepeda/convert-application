@@ -1,0 +1,252 @@
+.jc-lookbook {
+  --jc-lookbook-columns-desktop: 4;
+  --jc-lookbook-columns-mobile: 2;
+  --jc-lookbook-gap: 1rem;
+}
+
+.jc-lookbook__entries {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.jc-lookbook__hero {
+  margin-bottom: 2rem;
+}
+
+.jc-lookbook__hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--media-radius, 0);
+}
+
+.jc-lookbook__header {
+  margin-bottom: 2rem;
+}
+
+.jc-lookbook__title {
+  margin: 0 0 0.5rem;
+}
+
+.jc-lookbook__description {
+  margin: 0;
+  max-width: 62ch;
+  opacity: 0.85;
+}
+
+/* Grid ------------------------------------------------------------------ */
+
+.jc-lookbook__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--jc-lookbook-columns-mobile), minmax(0, 1fr));
+  gap: var(--jc-lookbook-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 750px) {
+  .jc-lookbook {
+    --jc-lookbook-gap: 1.5rem;
+  }
+
+  .jc-lookbook__grid {
+    grid-template-columns: repeat(var(--jc-lookbook-columns-desktop), minmax(0, 1fr));
+  }
+}
+
+/* Horizontal scroll variant. Falls back to the same grid rules on desktop
+   once every card fits without overflowing. */
+.jc-lookbook__grid--carousel {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, calc((100% - var(--jc-lookbook-gap)) / var(--jc-lookbook-columns-mobile)));
+  grid-template-columns: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 1.5rem;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 1rem;
+}
+
+.jc-lookbook__grid--carousel .jc-lookbook__item {
+  scroll-snap-align: start;
+}
+
+@media screen and (min-width: 750px) {
+  .jc-lookbook__grid--carousel {
+    grid-auto-columns: minmax(
+      0,
+      calc(
+        (100% - (var(--jc-lookbook-columns-desktop) - 1) * var(--jc-lookbook-gap)) /
+          var(--jc-lookbook-columns-desktop)
+      )
+    );
+  }
+}
+
+/* Card ------------------------------------------------------------------ */
+
+.jc-lookbook__card {
+  display: block;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.jc-lookbook__card:hover .jc-lookbook__product-title {
+  text-decoration: underline;
+}
+
+.jc-lookbook__media {
+  position: relative;
+  overflow: hidden;
+  background: rgba(var(--color-foreground), 0.04);
+  border-radius: var(--media-radius, 0);
+}
+
+.jc-lookbook__media--portrait {
+  aspect-ratio: 3 / 4;
+}
+
+.jc-lookbook__media--square {
+  aspect-ratio: 1 / 1;
+}
+
+.jc-lookbook__media--adapt {
+  aspect-ratio: auto;
+}
+
+.jc-lookbook__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+.jc-lookbook__media--adapt .jc-lookbook__image {
+  height: auto;
+}
+
+.jc-lookbook__card:hover .jc-lookbook__image {
+  transform: scale(1.03);
+}
+
+.jc-lookbook__image--placeholder {
+  min-height: 12rem;
+}
+
+.jc-lookbook__info {
+  padding: 1rem 0 0;
+}
+
+.jc-lookbook__vendor {
+  margin: 0 0 0.2rem;
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.jc-lookbook__product-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Price ----------------------------------------------------------------- */
+
+.jc-lookbook__price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: 1.4rem;
+}
+
+.jc-lookbook__price-prefix {
+  opacity: 0.7;
+}
+
+.jc-lookbook__price--on-sale .jc-lookbook__price-current {
+  color: rgb(var(--color-badge-foreground, var(--color-foreground)));
+}
+
+.jc-lookbook__price-compare {
+  opacity: 0.6;
+}
+
+.jc-lookbook__badge {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: var(--badge-corner-radius, 4rem);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+}
+
+.jc-lookbook__badge--sale {
+  background: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+}
+
+.jc-lookbook__badge--sold-out {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+}
+
+/* Loading + notices ------------------------------------------------------ */
+
+.jc-lookbook__shimmer {
+  position: relative;
+  overflow: hidden;
+  background: rgba(var(--color-foreground), 0.06);
+  border-radius: var(--media-radius, 0);
+}
+
+.jc-lookbook__shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(var(--color-foreground), 0.08), transparent);
+  animation: jc-lookbook-shimmer 1.4s infinite;
+}
+
+.jc-lookbook__shimmer--line {
+  height: 1.2rem;
+  margin-bottom: 0.6rem;
+  border-radius: 0.4rem;
+}
+
+.jc-lookbook__shimmer--short {
+  width: 40%;
+}
+
+@keyframes jc-lookbook-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jc-lookbook__shimmer::after {
+    animation: none;
+  }
+
+  .jc-lookbook__card:hover .jc-lookbook__image {
+    transform: none;
+  }
+}
+
+.jc-lookbook__notice {
+  padding: 1.6rem 2rem;
+  border: 1px dashed rgba(var(--color-foreground), 0.3);
+  border-radius: 0.6rem;
+  font-size: 1.4rem;
+}

@@ -1,0 +1,201 @@
+{% comment %}
+  JC Lookbook — product page placement.
+
+  Deliberately has no lookbook picker: adding the section is the whole
+  configuration. Every storefront-visible lookbook is scanned for the current
+  product's handle and at most two matches are rendered. All other settings
+  mirror sections/jc-lookbook.liquid, and both render through the same snippet.
+{% endcomment %}
+
+{{ 'jc-lookbook.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'jc-lookbook.js' | asset_url }}" defer="defer"></script>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  comment
+    Hard ceiling of 2: a product sitting in three or more lookbooks still only
+    ever renders two.
+  endcomment
+  assign lookbook_limit = section.settings.max_lookbooks | default: 2 | times: 1 | at_least: 1 | at_most: 2
+-%}
+
+{%- capture matched_handles -%}
+  {%- render 'jc-lookbook-matches', product: product, limit: lookbook_limit -%}
+{%- endcapture -%}
+
+{%- assign lookbook_handles = matched_handles | strip | split: ',' -%}
+
+{%- if lookbook_handles.size > 0 -%}
+  {% render 'jc-lookbook', section: section, lookbook_handles: lookbook_handles %}
+{%- elsif request.design_mode -%}
+  <div class="jc-lookbook color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+    <div class="page-width">
+      <div class="jc-lookbook__notice" role="status">
+        <strong>This product is not in any lookbook.</strong> The section is hidden on the live
+        storefront until a lookbook metaobject lists the handle
+        <code>{{ product.handle }}</code>.
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "JC Lookbook (product)",
+  "tag": "section",
+  "class": "section jc-lookbook-section",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows every lookbook this product belongs to. There is no lookbook picker — matching is automatic."
+    },
+    {
+      "type": "select",
+      "id": "max_lookbooks",
+      "label": "Maximum lookbooks to show",
+      "default": "2",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "info": "When a product belongs to three or more lookbooks, only the highest priority ones are shown."
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "default": "h2",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_lookbook_image",
+      "label": "Show lookbook image",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show lookbook description",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "carousel",
+      "options": [
+        { "value": "grid", "label": "Grid" },
+        { "value": "carousel", "label": "Horizontal scroll" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Product cards"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "default": "portrait",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "square", "label": "Square" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show second image on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show price",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Number of columns on desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Number of columns on mobile",
+      "default": "2",
+      "options": [
+        { "value": "1", "label": "1 column" },
+        { "value": "2", "label": "2 columns" }
+      ]
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "JC Lookbook (product)"
+    }
+  ]
+}
+{% endschema %}

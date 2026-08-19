@@ -1,0 +1,63 @@
+{% comment %}
+  Reverse lookup: which lookbooks contain a given product?
+
+  Lookbooks store product handles only, and a product carries no metafield
+  pointing back at the lookbooks that include it, so every storefront-visible
+  lookbook entry is scanned and matched on handle.
+
+  Accepts:
+  - product {Product} the product to match
+  - limit   {Number}  maximum number of lookbooks to return
+
+  Outputs a comma separated list of lookbook metaobject handles, ordered by the
+  entry's `priority` field (lowest first), which the caller captures and splits.
+{% endcomment %}
+
+{%- liquid
+  assign sort_keys = ''
+
+  for entry in shop.metaobjects.lookbook.values
+    assign raw_handles = entry.product_handles.value
+    if raw_handles == blank
+      continue
+    endif
+
+    assign is_match = false
+    for raw in raw_handles
+      assign candidate = raw | strip | downcase | split: '?' | first | split: '#' | first | split: '/' | last
+      if candidate == product.handle
+        assign is_match = true
+        break
+      endif
+    endfor
+
+    unless is_match
+      continue
+    endunless
+
+    comment
+      Offsetting by 1000 keeps every key four digits wide so a plain string sort
+      orders them numerically. Priorities are clamped to 0-8999.
+    endcomment
+    assign priority = entry.priority.value | default: 100 | at_least: 0 | at_most: 8999 | plus: 1000
+    assign sort_keys = sort_keys | append: priority | append: '|' | append: entry.system.handle | append: ','
+  endfor
+
+  assign sorted = sort_keys | split: ',' | sort
+  assign taken = 0
+  assign output = ''
+
+  for key in sorted
+    if taken >= limit
+      break
+    endif
+    assign entry_handle = key | split: '|' | last
+    if output != blank
+      assign output = output | append: ','
+    endif
+    assign output = output | append: entry_handle
+    assign taken = taken | plus: 1
+  endfor
+
+  echo output
+-%}

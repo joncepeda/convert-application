@@ -1,0 +1,200 @@
+{% comment %}
+  JC Lookbook — home page / general placement.
+
+  The merchant picks one or more lookbook metaobjects, and they render in the
+  order chosen. Only the product handles of those lookbooks are emitted;
+  assets/jc-lookbook.js resolves them against the Storefront API at runtime, in
+  the buyer's market, so prices and compare-at prices reflect any market level
+  overrides.
+{% endcomment %}
+
+
+{{ 'jc-lookbook.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'jc-lookbook.js' | asset_url }}" defer="defer"></script>
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+{%- liquid
+  comment
+    `metaobject_list` hands back an array of metaobject drops. The shared
+    snippet takes an array of metaobject *handles*, so that both this section
+    and the product page one give it the same shape -- flatten to a
+    comma-joined string and split it back out. An unselected setting is blank,
+    the loop never runs, and the split yields an empty array.
+  endcomment
+  assign lookbook_handles = ''
+
+  for selected in section.settings.lookbook
+    if lookbook_handles != blank
+      assign lookbook_handles = lookbook_handles | append: ','
+    endif
+    assign lookbook_handles = lookbook_handles | append: selected.system.handle
+  endfor
+
+  assign lookbook_handles = lookbook_handles | split: ',' | uniq
+-%}
+
+{%- if lookbook_handles.size > 0 -%}
+  {% render 'jc-lookbook', section: section, lookbook_handles: lookbook_handles %}
+{%- elsif request.design_mode -%}
+  <div class="jc-lookbook color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding">
+    <div class="page-width">
+      <div class="jc-lookbook__notice" role="status">
+        <strong>No lookbooks selected.</strong> Choose one or more lookbooks in the section
+        settings. They render in the order you select them.
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "JC Lookbook",
+  "tag": "section",
+  "class": "section jc-lookbook-section",
+  "disabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "metaobject_list",
+      "id": "lookbook",
+      "metaobject_type": "lookbook",
+      "label": "Lookbooks",
+      "info": "Select one or more. They render in the order chosen. Manage them in Settings → Custom data → Metaobjects → Lookbook."
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Heading size",
+      "default": "h1",
+      "options": [
+        { "value": "h2", "label": "Small" },
+        { "value": "h1", "label": "Medium" },
+        { "value": "h0", "label": "Large" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_lookbook_image",
+      "label": "Show lookbook image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show lookbook description",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "default": "grid",
+      "options": [
+        { "value": "grid", "label": "Grid" },
+        { "value": "carousel", "label": "Horizontal scroll" }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Product cards"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "default": "portrait",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "square", "label": "Square" }
+      ]
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "label": "Show second image on hover",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show vendor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show price",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Number of columns on desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Number of columns on mobile",
+      "default": "2",
+      "options": [
+        { "value": "1", "label": "1 column" },
+        { "value": "2", "label": "2 columns" }
+      ]
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "JC Lookbook"
+    }
+  ]
+}
+{% endschema %}

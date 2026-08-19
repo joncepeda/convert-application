@@ -1,0 +1,135 @@
+{% comment %}
+  Renders the mount point + JSON payload for the React lookbook app.
+
+  Accepts:
+  - section          {Object}  the calling section, so both the home page and the
+                               product page variants stay byte-identical in output
+  - lookbook_handles {Array}   ordered metaobject handles of the lookbooks to render
+
+  The lookbook stores product *handles* only, in its `product_handles` field.
+  Every product detail (title, media, price, compare-at price) is fetched at
+  runtime from the Storefront API by assets/jc-lookbook.js, so neither product
+  data nor market pricing is ever baked into this HTML.
+{% endcomment %}
+
+{%- liquid
+  assign api_version = settings.lookbook_storefront_api_version | default: '2025-01'
+  assign storefront_token = settings.lookbook_storefront_token
+  assign endpoint = 'https://' | append: shop.permanent_domain | append: '/api/' | append: api_version | append: '/graphql.json'
+
+  comment
+    Market context. `localization.*` tracks the country and language the buyer
+    picked in the theme's localization form, and the country is what decides
+    the market -- and therefore the currency -- that @inContext resolves to.
+    Falling back to the shop's own country keeps a single-market store working.
+  endcomment
+  assign country_code = localization.country.iso_code | default: shop.address.country_code
+  assign currency_code = localization.country.currency.iso_code | default: shop.currency
+
+  comment
+    `LanguageCode` is a Storefront API enum (EN, JA, PT_BR), not a BCP-47 tag,
+    so the region subtag is kept and underscored rather than discarded.
+  endcomment
+  assign language_code = localization.language.iso_code | upcase | replace: '-', '_'
+
+  comment
+    The formatting locale, by contrast, must stay a valid BCP-47 tag. Only add
+    the region when the shop locale has none: en -> en-AU, but pt-BR stays
+    pt-BR rather than becoming the invalid pt-BR-AU.
+  endcomment
+  assign intl_locale = request.locale.iso_code
+  unless intl_locale contains '-'
+    assign intl_locale = intl_locale | append: '-' | append: country_code
+  endunless
+-%}
+
+{%- capture lookbooks_json -%}
+  [
+  {%- assign emitted = 0 -%}
+  {%- for lookbook_handle in lookbook_handles -%}
+    {%- assign entry = shop.metaobjects.lookbook[lookbook_handle] -%}
+    {%- if entry == blank -%}{%- continue -%}{%- endif -%}
+
+    {%- assign raw_handles = entry.product_handles.value -%}
+    {%- capture handles_json -%}
+      {%- assign handle_count = 0 -%}
+      {%- for raw in raw_handles -%}
+        {%- comment -%}
+          Each list item is free text typed by a merchant, so normalise it:
+          trim, lowercase, and reduce a pasted product URL to just the handle.
+        {%- endcomment -%}
+        {%- assign candidate = raw | strip | downcase | split: '?' | first | split: '#' | first | split: '/' | last -%}
+        {%- if candidate != blank -%}
+          {%- if handle_count > 0 -%},{%- endif -%}
+          {{- candidate | json -}}
+          {%- assign handle_count = handle_count | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+
+    {%- if emitted > 0 -%},{%- endif -%}
+    {
+      "id": {{ entry.system.id | json }},
+      "handle": {{ entry.system.handle | json }},
+      "title": {{ entry.title.value | default: entry.system.handle | json }},
+      "description": {{ entry.description.value | default: '' | json }},
+      "image":
+        {%- if entry.image.value != blank -%}
+          {
+            "url": {{ entry.image.value | image_url: width: 1600 | json }},
+            "alt": {{ entry.image.value.alt | default: '' | json }},
+            "width": {{ entry.image.value.width | default: 0 | json }},
+            "height": {{ entry.image.value.height | default: 0 | json }}
+          }
+        {%- else -%}null{%- endif -%},
+      "handles": [{{ handles_json }}]
+    }
+    {%- assign emitted = emitted | plus: 1 -%}
+  {%- endfor -%}
+  ]
+{%- endcapture -%}
+
+<div
+  class="jc-lookbook color-{{ section.settings.color_scheme }} gradient section-{{ section.id }}-padding isolate"
+  data-jc-lookbook
+  data-section-id="{{ section.id }}"
+>
+  <div class="page-width">
+    <div data-jc-lookbook-app></div>
+  </div>
+
+  <script type="application/json" data-jc-lookbook-config>
+    {
+      "designMode": {{ request.design_mode | default: false | json }},
+      "shop": {
+        "endpoint": {{ endpoint | json }},
+        "token": {{ storefront_token | default: '' | json }},
+        "country": {{ country_code | json }},
+        "language": {{ language_code | json }},
+        "currency": {{ currency_code | json }},
+        "locale": {{ intl_locale | json }},
+        "rootUrl": {{ routes.root_url | json }}
+      },
+      "settings": {
+        "headingSize": {{ section.settings.heading_size | default: 'h2' | json }},
+        "showDescription": {{ section.settings.show_description | json }},
+        "showLookbookImage": {{ section.settings.show_lookbook_image | json }},
+        "layout": {{ section.settings.layout | default: 'grid' | json }},
+        "columnsDesktop": {{ section.settings.columns_desktop | default: 4 | json }},
+        "columnsMobile": {{ section.settings.columns_mobile | default: '2' | times: 1 | json }},
+        "imageRatio": {{ section.settings.image_ratio | default: 'portrait' | json }},
+        "showSecondaryImage": {{ section.settings.show_secondary_image | json }},
+        "showVendor": {{ section.settings.show_vendor | json }},
+        "showPrice": {{ section.settings.show_price | json }}
+      },
+      "strings": {
+        "from": {{ 'sections.jc_lookbook.from' | t | json }},
+        "save": {{ 'sections.jc_lookbook.save' | t | json }},
+        "soldOut": {{ 'products.product.sold_out' | t | json }},
+        "salePrice": {{ 'products.product.price.sale_price' | t | json }},
+        "regularPrice": {{ 'products.product.price.regular_price' | t | json }}
+      },
+      "lookbooks": {{ lookbooks_json }}
+    }
+  </script>
+</div>

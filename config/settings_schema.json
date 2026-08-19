@@ -1466,5 +1466,27 @@
         "label": "t:settings_schema.customer_accounts.settings.customer_account_menu.label"
       }
     ]
+  },
+  {
+    "name": "Lookbook",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "The lookbook sections fetch product data from the Storefront API at runtime. Create a Headless channel or custom app in Shopify admin, grant it unauthenticated_read_product_listings, and paste its public Storefront API access token below."
+      },
+      {
+        "type": "text",
+        "id": "lookbook_storefront_token",
+        "label": "Storefront API access token",
+        "info": "Public token only — never an Admin API token."
+      },
+      {
+        "type": "text",
+        "id": "lookbook_storefront_api_version",
+        "label": "Storefront API version",
+        "default": "2025-01",
+        "info": "Must be 2024-04 or newer."
+      }
+    ]
   }
 ]

@@ -1,0 +1,76 @@
+# Creates the `lookbook` metaobject definition.
+#
+# Run against the Admin GraphQL API (2024-04 or newer), e.g. from the
+# GraphiQL app in Shopify admin, or:
+#
+#   shopify app  ->  admin GraphiQL
+#   curl -X POST https://<shop>.myshopify.com/admin/api/2025-01/graphql.json \
+#     -H "X-Shopify-Access-Token: <admin-token>" \
+#     -H "Content-Type: application/json" \
+#     --data-binary @<(jq -Rs '{query: .}' scripts/lookbook-metaobject-definition.graphql)
+#
+# `storefront: PUBLIC_READ` on every field plus STOREFRONT access on the
+# definition is what makes `shop.metaobjects.lookbook` readable from Liquid.
+
+mutation CreateLookbookDefinition {
+  metaobjectDefinitionCreate(
+    definition: {
+      type: "lookbook"
+      name: "Lookbook"
+      description: "A curated set of products, referenced by product handle."
+      displayNameKey: "title"
+      access: { storefront: PUBLIC_READ }
+      capabilities: { publishable: { enabled: true } }
+      fieldDefinitions: [
+        {
+          key: "title"
+          name: "Title"
+          type: "single_line_text_field"
+          required: true
+          description: "Shown as the lookbook heading."
+        }
+        {
+          key: "description"
+          name: "Description"
+          type: "multi_line_text_field"
+          description: "Short intro copy shown under the heading."
+        }
+        {
+          key: "image"
+          name: "Hero image"
+          type: "file_reference"
+          validations: [{ name: "file_type_options", value: "[\"Image\"]" }]
+          description: "Optional editorial image shown above the products."
+        }
+        {
+          key: "product_handles"
+          name: "Product handles"
+          type: "list.single_line_text_field"
+          required: true
+          description: "One product handle per entry, e.g. silk-slip-dress. A pasted product URL also works. Product data is fetched at runtime from the Storefront API."
+        }
+        {
+          key: "priority"
+          name: "Priority"
+          type: "number_integer"
+          validations: [
+            { name: "min", value: "0" }
+            { name: "max", value: "8999" }
+          ]
+          description: "Lower shows first when a product belongs to more lookbooks than the product page will render. Defaults to 100."
+        }
+      ]
+    }
+  ) {
+    metaobjectDefinition {
+      id
+      type
+      name
+    }
+    userErrors {
+      field
+      message
+      code
+    }
+  }
+}
