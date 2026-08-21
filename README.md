@@ -10,5 +10,3 @@ This repo is for my application only
 
 - [LOOKBOOK.md](LOOKBOOK.md) — setup and operations: metaobjects, Storefront API
   token, adding the sections, markets and troubleshooting.
-- [explanations.md](explanations.md) — file-by-file walkthrough of the code,
-  including a React primer for anyone new to it.
