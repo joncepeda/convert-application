@@ -23,7 +23,10 @@ const PRODUCT_FRAGMENT = `
       minVariantPrice { amount currencyCode }
       maxVariantPrice { amount currencyCode }
     }
-    variants(first: 1) {
+    # Two, not one: the second node is only ever used as a "there is more than
+    # one variant" flag by quick add, which then sends the shopper to the
+    # product page to pick options instead of adding blind.
+    variants(first: 2) {
       nodes {
         id
         availableForSale
@@ -37,7 +40,10 @@ const PRODUCT_FRAGMENT = `
 /** Storefront API query cost is capped, so handles are requested in batches. */
 const BATCH_SIZE = 40;
 const CACHE_TTL_MS = 10 * 60 * 1000;
-const CACHE_PREFIX = 'jc-lookbook:v2';
+// v3 widened `variants` from one node to two, which is how quick add tells a
+// single-variant product from one that needs its options picked. A v2 entry
+// only ever holds one node, so it would read as single-variant forever.
+const CACHE_PREFIX = 'jc-lookbook:v3';
 
 /** Shared across every section instance on the page. */
 const memoryCache = new Map();

@@ -10,6 +10,16 @@
   gap: 4rem;
 }
 
+/* Title override: one heading for the whole section, sitting above every
+   lookbook in place of their individual titles. */
+.jc-lookbook__section-header {
+  margin-bottom: 2rem;
+}
+
+.jc-lookbook__section-title {
+  margin: 0;
+}
+
 .jc-lookbook__hero {
   margin-bottom: 2rem;
 }
@@ -88,13 +98,28 @@
 /* Card ------------------------------------------------------------------ */
 
 .jc-lookbook__card {
+  position: relative;
   display: block;
   height: 100%;
   text-decoration: none;
   color: inherit;
 }
 
-.jc-lookbook__card:hover .jc-lookbook__product-title {
+/* The title link is the card's link: its ::after stretches over the whole card
+   so anywhere is clickable, while quick add sits above it on a higher layer. */
+.jc-lookbook__link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.jc-lookbook__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.jc-lookbook__card:hover .jc-lookbook__link {
   text-decoration: underline;
 }
 
@@ -200,6 +225,102 @@
   color: rgb(var(--color-foreground));
 }
 
+/* Quick add ------------------------------------------------------------- */
+
+.jc-lookbook__quick-add-wrap {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+}
+
+.jc-lookbook__quick-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  padding: 0;
+  border: 0.1rem solid rgba(var(--color-foreground), 0.1);
+  border-radius: 50%;
+  background: #334fb3;
+  color: #fff;
+  box-shadow: 0 0.2rem 0.8rem rgba(var(--color-foreground), 0.12);
+  cursor: pointer;
+  text-decoration: none;
+
+  /* Hidden until the card is hovered or something inside it takes focus.
+     Kept in the layout (rather than display: none) so the reveal can animate
+     and so the button is never re-created mid-click. */
+  opacity: 0;
+  transform: translateY(0.4rem);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.jc-lookbook__card:hover .jc-lookbook__quick-add,
+.jc-lookbook__card:focus-within .jc-lookbook__quick-add,
+.jc-lookbook__quick-add:focus-visible,
+.jc-lookbook__quick-add--loading {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.jc-lookbook__quick-add:hover {
+  background: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+}
+
+.jc-lookbook__quick-add[aria-disabled='true'] {
+  cursor: wait;
+}
+
+.jc-lookbook__quick-add-icon,
+.jc-lookbook__quick-add-icon svg {
+  display: block;
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.jc-lookbook__spinner {
+  display: block;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 0.2rem solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: jc-lookbook-spin 0.7s linear infinite;
+}
+
+@keyframes jc-lookbook-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.jc-lookbook__quick-add-error {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.6rem);
+  z-index: 3;
+  width: max-content;
+  max-width: 22rem;
+  margin: 0;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.4rem;
+  background: rgb(var(--color-foreground));
+  color: rgb(var(--color-background));
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+/* Touch devices have no hover, so the button is simply always visible. */
+@media (hover: none) {
+  .jc-lookbook__quick-add {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Loading + notices ------------------------------------------------------ */
 
 .jc-lookbook__shimmer {
@@ -241,6 +362,18 @@
 
   .jc-lookbook__card:hover .jc-lookbook__image {
     transform: none;
+  }
+
+  .jc-lookbook__quick-add {
+    transition: none;
+    transform: none;
+  }
+
+  /* The spinner still has to read as "working", so it steps instead of
+     spinning smoothly rather than stopping altogether. */
+  .jc-lookbook__spinner {
+    animation-duration: 1.4s;
+    animation-timing-function: steps(8, end);
   }
 }
 

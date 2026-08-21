@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "main": {
@@ -76,12 +85,38 @@
     "disclosures": {
       "type": "disclosures",
       "settings": {
+        "heading": "Disclosures",
+        "heading_size": "h2",
+        "open_by_default": false,
+        "color_scheme": "",
         "padding_top": 36,
         "padding_bottom": 0
       }
     },
+    "jc-lookbook": {
+      "type": "jc-lookbook-product",
+      "settings": {
+        "max_lookbooks": "2",
+        "title_override": "",
+        "heading_size": "h2",
+        "show_lookbook_image": false,
+        "show_description": true,
+        "layout": "carousel",
+        "image_ratio": "portrait",
+        "show_secondary_image": true,
+        "enable_quick_add": true,
+        "show_vendor": false,
+        "show_price": true,
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-1",
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
+    },
     "related-products": {
       "type": "related-products",
+      "disabled": true,
       "settings": {
         "heading": "You may also like",
         "heading_size": "h2",
@@ -96,25 +131,6 @@
         "show_rating": false,
         "padding_top": 36,
         "padding_bottom": 28
-      }
-    },
-    "jc-lookbook": {
-      "type": "jc-lookbook-product",
-      "settings": {
-        "max_lookbooks": "2",
-        "heading_size": "h2",
-        "show_lookbook_image": false,
-        "show_description": true,
-        "layout": "carousel",
-        "image_ratio": "portrait",
-        "show_secondary_image": true,
-        "show_vendor": false,
-        "show_price": true,
-        "columns_desktop": 4,
-        "columns_mobile": "2",
-        "color_scheme": "scheme-1",
-        "padding_top": 40,
-        "padding_bottom": 40
       }
     }
   },

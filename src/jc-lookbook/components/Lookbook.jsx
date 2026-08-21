@@ -9,11 +9,14 @@ import { resize, srcSet } from '../lib/image.js';
  * Handles that no longer resolve (unpublished, deleted, or outside the current
  * market) are dropped silently rather than rendering a broken card.
  */
-export default function Lookbook({ lookbook, products, status, settings, shop, strings }) {
+export default function Lookbook({ lookbook, products, status, settings, shop, strings, showTitle = true }) {
   const resolved = lookbook.handles.map((handle) => products[handle]).filter(Boolean);
   const isLoading = status === 'loading';
 
   if (!isLoading && !resolved.length) return null;
+
+  const heading = showTitle && lookbook.title;
+  const description = settings.showDescription && lookbook.description;
 
   const gridStyle = {
     '--jc-lookbook-columns-desktop': settings.columnsDesktop,
@@ -36,14 +39,18 @@ export default function Lookbook({ lookbook, products, status, settings, shop, s
         </div>
       )}
 
-      <header className="jc-lookbook__header">
-        {lookbook.title && (
-          <h2 className={`jc-lookbook__title ${settings.headingSize}`}>{lookbook.title}</h2>
-        )}
-        {settings.showDescription && lookbook.description && (
-          <p className="jc-lookbook__description">{lookbook.description}</p>
-        )}
-      </header>
+      {/*
+        `showTitle` is false when the section carries a title override: the
+        heading has already been rendered once, above every lookbook. The
+        description stays either way — it belongs to this lookbook, not to the
+        section — so the header is only dropped when it would be empty.
+      */}
+      {(heading || description) && (
+        <header className="jc-lookbook__header">
+          {heading && <h2 className={`jc-lookbook__title ${settings.headingSize}`}>{lookbook.title}</h2>}
+          {description && <p className="jc-lookbook__description">{lookbook.description}</p>}
+        </header>
+      )}
 
       {isLoading ? (
         <Skeleton count={Math.min(lookbook.handles.length, settings.columnsDesktop)} settings={settings} />

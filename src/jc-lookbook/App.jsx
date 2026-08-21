@@ -92,26 +92,39 @@ export default function App({ config }) {
     );
   }
 
+  // A title override speaks for the section as a whole, so it replaces the
+  // per-lookbook headings rather than stacking a second heading on top of them.
+  const sectionTitle = (settings.titleOverride || '').trim();
+
   return (
-    <div className="jc-lookbook__entries">
-      {designMode && currencyMismatch && (
-        <div className="jc-lookbook__notice" role="alert">
-          <strong>Wrong currency.</strong> This market trades in {currencyMismatch.expected} but the
-          Storefront API returned {currencyMismatch.returned} for country {shop.country}. Confirm
-          that {shop.country} is in an active market and that the Storefront API token can read it.
-        </div>
+    <>
+      {sectionTitle && (
+        <header className="jc-lookbook__section-header">
+          <h2 className={`jc-lookbook__section-title ${settings.headingSize}`}>{sectionTitle}</h2>
+        </header>
       )}
-      {visible.map((lookbook) => (
-        <Lookbook
-          key={lookbook.id}
-          lookbook={lookbook}
-          products={products}
-          status={status}
-          settings={settings}
-          shop={shop}
-          strings={strings}
-        />
-      ))}
-    </div>
+      <div className="jc-lookbook__entries">
+        {designMode && currencyMismatch && (
+          <div className="jc-lookbook__notice" role="alert">
+            <strong>Wrong currency.</strong> This market trades in {currencyMismatch.expected} but
+            the Storefront API returned {currencyMismatch.returned} for country {shop.country}.
+            Confirm that {shop.country} is in an active market and that the Storefront API token can
+            read it.
+          </div>
+        )}
+        {visible.map((lookbook) => (
+          <Lookbook
+            key={lookbook.id}
+            lookbook={lookbook}
+            products={products}
+            status={status}
+            settings={settings}
+            shop={shop}
+            strings={strings}
+            showTitle={!sectionTitle}
+          />
+        ))}
+      </div>
+    </>
   );
 }

@@ -98,12 +98,68 @@ the entire configuration.
 `jc-lookbook-product` is already wired into `templates/product.json`, so it is
 live as soon as a lookbook lists a product.
 
-Every other setting — heading size, hero image, description, grid vs.
-horizontal scroll, image ratio, hover image, vendor, price, columns, colour
-scheme, padding — is identical on both sections. Both render through the same
-`snippets/jc-lookbook.liquid`, so the two can never drift.
+Every other setting — title override, heading size, hero image, description,
+grid vs. horizontal scroll, image ratio, hover image, quick add, vendor, price,
+columns, colour scheme, padding — is identical on both sections. Both render
+through the same `snippets/jc-lookbook.liquid`, so the two can never drift.
 
 ---
+
+## Title override
+
+**Title override** is a single text field on both sections.
+
+- **Left blank** (the default) each lookbook is headed by its own `title` from
+  its metaobject, exactly as before.
+- **Filled in** that text is rendered once, as the heading for the entire
+  section, and the individual lookbook titles are not shown. With two or more
+  lookbooks selected this is what makes them read as one group rather than as
+  separate blocks — "Autumn Edit" over the lot, instead of "Resort 25" and
+  "City Edit" stacked.
+
+Lookbook **descriptions** are unaffected either way: a description belongs to
+its own lookbook, not to the section, so it stays under the products it
+introduces. The override is rendered at the section's **Heading size**, and it
+is rendered by the React app rather than by Liquid, so it disappears along with
+the rest of the section when no products resolve.
+
+---
+
+## Quick add
+
+**Product cards → Enable quick add to cart** (on by default, on both sections)
+puts a round `+` button over the bottom-right of each product image. It is
+invisible until the card is hovered — or until something inside the card takes
+keyboard focus — and it is always visible on touch devices, which have no hover.
+
+What the button does depends on the product:
+
+| Product                | Button        | Behaviour                                                       |
+| ---------------------- | ------------- | --------------------------------------------------------------- |
+| One variant            | `+` button    | Adds that variant to the cart over ajax, without leaving the page |
+| More than one variant  | `+` link      | Goes to the product page so the shopper can choose options        |
+| Sold out               | none          | No button renders                                                 |
+
+While the add is in flight the `+` is replaced by a spinner and the button is
+marked `aria-disabled`. The spinner clears only once **every** request the click
+started has settled: the `POST /cart/add.js`, the cart sections Shopify renders
+in the same response, and any `cart-update` subscribers in the theme.
+
+The add is deliberately the same round trip Dawn's own `product-form.js` makes —
+`/cart/add.js` with a `sections` parameter, then `renderContents()` on whichever
+cart UI the theme has. So the cart drawer or the cart notification opens exactly
+as it does from a product page, and the header count updates with it. If the
+theme's cart type is a full page instead, the shopper is taken to `/cart`.
+
+If Shopify rejects the line — out of stock, a quantity rule — the message it
+returns is shown in a small tooltip above the button and the `+` comes back.
+
+Multi-variant detection is why the Storefront API query asks for `variants(first: 2)`:
+the second node is only ever used as a "there is more than one" flag. The
+`sessionStorage` cache prefix moved to `v3` with that change, so a cached v2
+entry — which only ever held one variant — can never be mistaken for a
+single-variant product.
+
 
 ## Markets and currency
 
@@ -162,12 +218,7 @@ switch can never serve another market's amounts out of `sessionStorage`.
 npm install
 npm run build     # bundle src/jc-lookbook -> assets/jc-lookbook.js
 npm run dev       # same, in watch mode
-npm test          # build, then run the jsdom smoke test
 ```
-
-`npm test` boots the built bundle in jsdom against a stubbed Storefront API and
-asserts the AUD and JPY renders — including the compare-at override, request
-batching, handle deduplication and market-scoped links.
 
 ### Source layout
 
@@ -178,6 +229,8 @@ batching, handle deduplication and market-scoped links.
 | `snippets/jc-lookbook.liquid`          | Shared mount point + JSON payload                   |
 | `snippets/jc-lookbook-matches.liquid`  | Product → lookbooks reverse lookup                  |
 | `src/jc-lookbook/`                     | React source                                        |
+| `src/jc-lookbook/components/QuickAdd.jsx` | The hover `+` button and its spinner             |
+| `src/jc-lookbook/lib/cart.js`          | `/cart/add.js` + cart section rendering             |
 | `assets/jc-lookbook.js`                | Built bundle — **generated, do not edit**           |
 | `assets/jc-lookbook.css`               | Section styles                                      |
 | `scripts/lookbook-metaobject-definition.graphql` | Admin API mutation for the definition     |

@@ -112,6 +112,7 @@
       },
       "settings": {
         "headingSize": {{ section.settings.heading_size | default: 'h2' | json }},
+        "titleOverride": {{ section.settings.title_override | default: '' | strip | json }},
         "showDescription": {{ section.settings.show_description | json }},
         "showLookbookImage": {{ section.settings.show_lookbook_image | json }},
         "layout": {{ section.settings.layout | default: 'grid' | json }},
@@ -120,14 +121,19 @@
         "imageRatio": {{ section.settings.image_ratio | default: 'portrait' | json }},
         "showSecondaryImage": {{ section.settings.show_secondary_image | json }},
         "showVendor": {{ section.settings.show_vendor | json }},
-        "showPrice": {{ section.settings.show_price | json }}
+        "showPrice": {{ section.settings.show_price | json }},
+        "enableQuickAdd": {{ section.settings.enable_quick_add | default: true, allow_false: true | json }}
       },
       "strings": {
         "from": {{ 'sections.jc_lookbook.from' | t | json }},
         "save": {{ 'sections.jc_lookbook.save' | t | json }},
         "soldOut": {{ 'products.product.sold_out' | t | json }},
         "salePrice": {{ 'products.product.price.sale_price' | t | json }},
-        "regularPrice": {{ 'products.product.price.regular_price' | t | json }}
+        "regularPrice": {{ 'products.product.price.regular_price' | t | json }},
+        "addToCart": {{ 'products.product.add_to_cart' | t | json }},
+        "addingToCart": {{ 'accessibility.loading' | t | json }},
+        "chooseOptions": {{ 'products.product.choose_options' | t | json }},
+        "chooseProductOptions": {{ 'products.product.choose_product_options' | t | json }}
       },
       "lookbooks": {{ lookbooks_json }}
     }
